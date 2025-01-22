@@ -22,6 +22,7 @@ RUN apt-get update -q && \
 	wget \
 	flex \
 	texinfo \
+    file \
     && apt-get autoremove -y --purge \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
