@@ -109,8 +109,8 @@ RUN mkdir -p $ROOT_DIR/csu && \
 RUN mkdir -p $ROOT_DIR/build/target/gcc && \
     cd $ROOT_DIR/build/target/gcc && \
     $ROOT_DIR/gcc/configure CC=clang CXX=clang++ --disable-nls --disable-multilib --enable-languages=c,c++,lto --with-dwarf2 --prefix="$TARGET_PREFIX" --target=$TARGET --with-sysroot="$TARGET_PREFIX/$MAC_SDK_VERSION.sdk" CXXFLAGS_FOR_TARGET="-O2 -g -mmacosx-version-min=$MACOSX_PPC_DEPLOYMENT_TARGET" CFLAGS_FOR_TARGET="-O2 -g -mmacosx-version-min=$MACOSX_PPC_DEPLOYMENT_TARGET" LDFLAGS_FOR_TARGET="-O2 -g -mmacosx-version-min=$MACOSX_PPC_DEPLOYMENT_TARGET" --disable-bootstrap && \
-    make all-gcc -j2 && \
-    make install-gcc -j2
+    make all-gcc -j && \
+    make install-gcc -j
 
 ## Rebuilding Apple's crt1.o
 
