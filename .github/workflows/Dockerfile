@@ -77,11 +77,11 @@ RUN wget https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/$MAC_SDK
     rm $MAC_SDK_VERSION.sdk.tar.xz
 
 RUN cd $TARGET_PREFIX/$MAC_SDK_VERSION.sdk/usr/lib && \
-    for i in **/*.dylib **/*.a **/*.o; do \
-      if file "$i" | grep -q "for architecture ppc)"; then \
+    for i in $(find . -type f \( -name "*.dylib" -o -name "*.a" -o -name "*.o" \)); do \
+      if file "$i" | grep -q "ppc:"; then \
         mv $i $i.universal && \
         $TARGET_PREFIX/bin/$TARGET-lipo -thin ppc $i.universal -output $i; \
-      elif file "$i" | grep -q "for architecture ppc7400)"; then \
+      elif file "$i" | grep -q "\ppc_7400:"; then \
         mv $i $i.universal && \
         $TARGET_PREFIX/bin/$TARGET-lipo -thin ppc7400 $i.universal -output $i; \
       fi \
