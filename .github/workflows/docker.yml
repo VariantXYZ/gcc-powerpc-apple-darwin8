@@ -2,10 +2,14 @@ name: Create a Docker image
 
 on:
   push:
-    branches: ['main']
+    branches:
+      - main
+      - 'build/**'
+
     paths:
       - '.github/workflows/Dockerfile'
       - '.github/workflows/docker.yml'
+
   # Allows running manually
   workflow_dispatch:
 
@@ -17,7 +21,6 @@ env:
   TARGET: powerpc-apple-darwin8
   MAC_SDK_VERSION: MacOSX10.5
   MACOSX_PPC_DEPLOYMENT_TARGET: 10.4
-
 
 jobs:
   docker-update:
