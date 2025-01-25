@@ -76,6 +76,7 @@ RUN wget https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/$MAC_SDK
     tar xf ./$MAC_SDK_VERSION.sdk.tar.xz -C $TARGET_PREFIX && \
     rm $MAC_SDK_VERSION.sdk.tar.xz
 
+# Force only the ppc binaries to exist
 RUN cd $TARGET_PREFIX/$MAC_SDK_VERSION.sdk/usr/lib && \
     for i in $(find . -type f \( -name "*.dylib" -o -name "*.a" -o -name "*.o" \)); do \
       if file "$i" | grep -q "ppc:"; then \
@@ -92,8 +93,8 @@ RUN cd $TARGET_PREFIX/$MAC_SDK_VERSION.sdk/usr/lib && \
 RUN mkdir -p $ROOT_DIR/gcc && \
     cd $ROOT_DIR/gcc && \
     git init && \
-    git remote add origin https://github.com/VariantXYZ/gcc-13-branch.git && \
-    git fetch --depth 1 origin 908dbc96f1271f995759c87fc9d32879d6f49756 && \
+    git remote add origin https://github.com/VariantXYZ/gcc-14-branch.git && \
+    git fetch --depth 1 origin 67aa1b48dd9a0651a2c2e3b4a1bf6d12e2363fb8 && \
     git checkout FETCH_HEAD && \
     ./contrib/download_prerequisites
 
@@ -113,7 +114,7 @@ RUN mkdir -p $ROOT_DIR/build/target/gcc && \
     make install-gcc -j
 
 ## Rebuilding Apple's crt1.o
-
+## This should also allow for static linking: https://developer.apple.com/library/archive/qa/qa1118/_index.html
 RUN cd $ROOT_DIR/csu && \
     make CC=$TARGET_PREFIX/bin/powerpc-apple-darwin8-gcc ARCH_CFLAGS="-arch ppc -D__private_extern__= -isysroot $TARGET_PREFIX/$MAC_SDK_VERSION.sdk" ./crt1.v1.o && \
     mv ./crt1.v1.o $TARGET_PREFIX/$MAC_SDK_VERSION.sdk/usr/lib/crt1.o && \
