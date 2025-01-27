@@ -140,7 +140,7 @@ RUN mkdir -p $ROOT_DIR/build/target/gcc && \
     echo "gcc_cv_as_darwin_build_version=no" >> config.site-$TARGET && \
     echo "gcc_cv_ld64_demangle=0" >> config.site-$TARGET && \
     echo "gcc_cv_ld64_platform_version=0" >> config.site-$TARGET && \
-    $ROOT_DIR/gcc/configure CC=clang CXX=clang++ --disable-nls --disable-multilib --enable-languages=c,c++,lto --with-dwarf2 --prefix="$TARGET_PREFIX" --target=$TARGET --with-sysroot="$TARGET_PREFIX/$MAC_SDK_VERSION.sdk" CXXFLAGS_FOR_TARGET="-O2 -g -mmacosx-version-min=$MACOSX_PPC_DEPLOYMENT_TARGET" CFLAGS_FOR_TARGET="-O2 -g -mmacosx-version-min=$MACOSX_PPC_DEPLOYMENT_TARGET" LDFLAGS_FOR_TARGET="-O2 -g -mmacosx-version-min=$MACOSX_PPC_DEPLOYMENT_TARGET" --disable-bootstrap && \
+    CONFIG_SITE=$ROOT_DIR/build/target/gcc/config.site-$TARGET $ROOT_DIR/gcc/configure CC=clang CXX=clang++ --disable-nls --disable-multilib --enable-languages=c,c++,lto --with-dwarf2 --prefix="$TARGET_PREFIX" --target=$TARGET --with-sysroot="$TARGET_PREFIX/$MAC_SDK_VERSION.sdk" CXXFLAGS_FOR_TARGET="-O2 -g -mmacosx-version-min=$MACOSX_PPC_DEPLOYMENT_TARGET" CFLAGS_FOR_TARGET="-O2 -g -mmacosx-version-min=$MACOSX_PPC_DEPLOYMENT_TARGET" LDFLAGS_FOR_TARGET="-O2 -g -mmacosx-version-min=$MACOSX_PPC_DEPLOYMENT_TARGET" --disable-bootstrap && \
     make all-gcc -j2 && \
     make install-gcc -j
 
