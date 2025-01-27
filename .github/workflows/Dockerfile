@@ -6,6 +6,7 @@ ARG MACOSX_PPC_DEPLOYMENT_TARGET
 
 ENV ROOT_DIR=/home
 ENV TARGET_PREFIX=/usr/local
+ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
 
 RUN mkdir -p $ROOT_DIR
 
@@ -23,18 +24,39 @@ RUN apt-get update -q && \
 	flex \
 	texinfo \
     file \
+    autoconf \
+    libssl-dev \
+    libz-dev \
+    libtool-bin \
     && apt-get autoremove -y --purge \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
-# dsymutil
+# libxar on host
+
+RUN mkdir -p $ROOT_DIR/xar && \
+    cd $ROOT_DIR/xar && \
+    git init && \
+    git remote add origin https://github.com/tpoechtrager/xar.git && \
+    git fetch --depth 1 origin 5fa4675419cfec60ac19a9c7f7c2d0e7c831a497 && \
+    git checkout FETCH_HEAD
+
+RUN mkdir -p $ROOT_DIR/build/host/xar && \
+    cd $ROOT_DIR/build/host/xar && \
+    CC=clang CXX=clang++ $ROOT_DIR/xar/xar/configure && \
+    make -j2 && \
+    make -j install
+
+# cctools
+
+## dsymutil
 
 RUN mkdir -p $ROOT_DIR/llvm-project && \
-	cd $ROOT_DIR/llvm-project && \
-	git init && \
-	git remote add origin https://github.com/llvm/llvm-project.git && \
-	git fetch --depth 1 origin 4856a9330ee01d30e9e11b6c2f991662b4c04b07 && \
-	git checkout FETCH_HEAD
+    cd $ROOT_DIR/llvm-project && \
+    git init && \
+    git remote add origin https://github.com/llvm/llvm-project.git && \
+    git fetch --depth 1 origin 4856a9330ee01d30e9e11b6c2f991662b4c04b07 && \
+    git checkout FETCH_HEAD
 
 RUN mkdir -p $ROOT_DIR/build/target/llvm-project && \
     cd $ROOT_DIR/build/target/llvm-project && \
@@ -49,19 +71,23 @@ RUN mkdir -p $ROOT_DIR/build/target/llvm-project && \
     rm -rf $ROOT_DIR/build/target/llvm-project && \
     rm -rf $ROOT_DIR/llvm-project
 
-# cctools
+## ld, as, ar, lipo, nm, ranlib
 
 RUN mkdir -p $ROOT_DIR/cctools-port && \
     cd $ROOT_DIR/cctools-port && \
     git init && \
-    git remote add origin https://github.com/Wohlstand/cctools-port.git && \
-    git fetch --depth 1 origin f0ac160455ce815def93194a298c07d78e81f343 && \
-    git checkout FETCH_HEAD
+    git remote add origin https://github.com/tpoechtrager/cctools-port.git && \
+    git fetch --depth 1 origin 6694f27d56923e64e6190c8d3eb149413768e9b7 && \
+    git checkout FETCH_HEAD && \
+    cd cctools && \
+    ./autogen.sh
+
+## Symlink for convenience
 
 RUN mkdir -p $ROOT_DIR/build/target/cctools-port && \
     cd $ROOT_DIR/build/target/cctools-port && \
     $ROOT_DIR/cctools-port/cctools/configure CC=clang CXX=clang++ --prefix="$TARGET_PREFIX" --target=$TARGET && \
-    make -j && \
+    make -j2 && \
     make install -j && \
     mkdir -p $TARGET_PREFIX/$TARGET/bin && \
     for i in ld ar as lipo nm ranlib strip dsymutil; do \
@@ -109,6 +135,11 @@ RUN mkdir -p $ROOT_DIR/csu && \
 
 RUN mkdir -p $ROOT_DIR/build/target/gcc && \
     cd $ROOT_DIR/build/target/gcc && \
+    echo "" > config.site-$TARGET && \
+    echo "gcc_cv_as_mmacosx_version_min=no" >> config.site-$TARGET && \
+    echo "gcc_cv_as_darwin_build_version=no" >> config.site-$TARGET && \
+    echo "gcc_cv_ld64_demangle=0" >> config.site-$TARGET && \
+    echo "gcc_cv_ld64_platform_version=0" >> config.site-$TARGET && \
     $ROOT_DIR/gcc/configure CC=clang CXX=clang++ --disable-nls --disable-multilib --enable-languages=c,c++,lto --with-dwarf2 --prefix="$TARGET_PREFIX" --target=$TARGET --with-sysroot="$TARGET_PREFIX/$MAC_SDK_VERSION.sdk" CXXFLAGS_FOR_TARGET="-O2 -g -mmacosx-version-min=$MACOSX_PPC_DEPLOYMENT_TARGET" CFLAGS_FOR_TARGET="-O2 -g -mmacosx-version-min=$MACOSX_PPC_DEPLOYMENT_TARGET" LDFLAGS_FOR_TARGET="-O2 -g -mmacosx-version-min=$MACOSX_PPC_DEPLOYMENT_TARGET" --disable-bootstrap && \
     make all-gcc -j2 && \
     make install-gcc -j
