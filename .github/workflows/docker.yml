@@ -19,7 +19,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   # Dockerfile arguments
   TARGET: powerpc-apple-darwin8
-  MAC_SDK_VERSION: MacOSX10.5
+  MAC_SDK_VERSION: MacOSX10.4u
   MACOSX_PPC_DEPLOYMENT_TARGET: 10.4
 
 jobs:
