@@ -104,7 +104,7 @@ RUN wget https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/$MAC_SDK
 
 # Force only the ppc binaries to exist
 RUN cd $TARGET_PREFIX/$MAC_SDK_VERSION.sdk/usr/lib && \
-    for i in $(find . -type f \( -name "*.dylib" -o -name "*.a" -o -name "*.o" \)); do \
+    for i in $(find . -type f); do \
       if file "$i" | grep -q "ppc:"; then \
         mv $i $i.universal && \
         $TARGET_PREFIX/bin/$TARGET-lipo -thin ppc $i.universal -output $i; \
